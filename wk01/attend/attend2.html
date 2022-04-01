@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>DIP ระบบบันทึกเวลา</title>
+	<script type="text/javascript" src="/webcam.min.js"></script>
+	<script language = "JavaScript" >
+	var attID, rdfID, x, fname, lname
+	var jpguri
+
+
+		//alert(" screen "+screen.height+" x "+screen.width)
+/*			if (screen.height <= screen.width) { // Landscape จอนอน
+			var p_width = 360;
+			var p_height = 270;
+			var width = 320;
+			var height = 240;
+		} else { //Portrait จอแนวตั้ง
+			p_width = 240;
+			p_height = 320;
+			width = 240;
+			height = 320;
+		}
+	Webcam.set({
+			// live preview size
+			width: p_width,
+			height: p_height,
+			// device capture size
+			dest_width: width / 1.3,
+			dest_height: height / 1.3,
+			// final cropped size
+			crop_width: width / 1.3,
+			crop_height: height / 1.3,
+			// format and quality
+			image_format: 'jpeg',
+			jpeg_quality: 90,
+			flip_horiz: true,
+//			constraints: {
+//				video: true,
+//				facingMode: "user"
+//			}
+		});
+		*/
+			function init() {
+			attID = '%s'
+			rdfID = '%s'
+			fname = '%s'
+			lname = '%s'
+			x = document.getElementById('attID')
+			//x.innerHTML = attID+","+rdfID+","+fname+","+lname
+			x.innerHTML = fname+"  "+lname
+			Webcam.set({
+				width: 240,
+				height: 240,
+				image_format: 'jpeg',
+				jpeg_quality: 90,
+			constraints: {
+				width: 320,  { exact: 320 },
+				height: 180,  { exact: 180 },
+				facingMode: 'user',
+				frameRate: 30
+			}
+			
+			});
+			Webcam.attach( '#webcam' );
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(showPosition);
+			} else {
+				y.innerHTML = "Geolocation is not supported by this browser.";
+			}
+		}
+	var snapcnt = 0
+
+	function snap_loop(data_uri) {
+		document.getElementById('snapcnt').innerHTML = "cnt:" + snapcnt;
+		snapcnt++;
+		jpguri = data_uri
+		setTimeout(snap_loop, 1000)
+		//			setTimeout( Webcam.snap( snap_loop ), 1000)
+	}
+	var lat, lng, pic;
+
+	function showPosition(position) {
+		lat = position.coords.latitude;
+		lng = position.coords.longitude;
+		accr = position.coords.accuracy;
+		lat = lat.toString().substring(0, 8);
+		lng = lng.toString().substring(0, 9);
+		accr = accr.toString().substring(0, 5);
+		document.getElementById('gps-lat').innerHTML = lat
+		document.getElementById('gps-log').innerHTML = lng
+		document.getElementById('gps-accr').innerHTML = accr
+		ifrm = "<iframe src='https://maps.google.com/?ie=UTF8&lh=th&t=m&ll=" + lat + "," + lng + "&z=19&output=embed'></iframe></iframe><iframe src='https://maps.google.com/maps?hl=th&q=" + lat + "," + lng + "&t=&z=13&ie=UTF8&iwloc=B&output=embed'></iframe>"
+		//alert(ifrm)
+		document.getElementById('x1').innerHTML = ifrm
+	}
+	// preload shutter audio clip
+	var shutter = new Audio();
+	shutter.autoplay = false;
+	shutter.src = navigator.userAgent.match(/Firefox/) ? '/sound/shutter.ogg' : '/sound/shutter.mp3';
+
+	function send_mode(md, data_uri, msg) {
+		// play sound effect
+		shutter.play();
+		document.getElementById('pic2').innerHTML = data_uri.length
+		pic = data_uri.split(',')[1];
+		document.getElementById('pic0').innerHTML = pic
+		const xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function () {
+			if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+				//					alert(msg+" :a: "+ this.response)
+				newres = "" + "<center><div><H1>" + msg + "</H1>" + "<h4>คุณ : " + fname + '  ' + lname + "</h4>" + "<h4>บันทึกเวลา: " + this.response + "</h4>" + "<img src='" + data_uri + "'>" + "<h4>พิกัด: " + lat + "," + lng + "</h4>" + "</div></center>"
+				document.getElementById('bodyid').innerHTML = newres
+			}
+		}
+		xhr.open("POST", "/attend/send", true);
+		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhr.send("attID=" + attID + "&rdfID=" + rdfID + "&mode=" + md + "&lat=" + lat + "&lng=" + lng + "&pic=" + pic);
+	}
+
+	function send_enterDIP() {
+		Webcam.snap(function (data_uri) {
+			//msg = fname+' '+lname+' สถานที่ '+lat+","+lng+' บันทึกเวลาปฏิบัติงานที่กรมสำเร็จ'
+			msg = ' บันทึกเวลาปฏิบัติงานที่กรมสำเร็จ'
+			send_mode('enterDIP', data_uri, msg)
+		});
+	}
+
+	function send_enterHOME() {
+		Webcam.snap(function (data_uri) {
+			//msg = fname+' '+lname+' สถานที่ '+lat+","+lng+' บันทึกเวลาปฏิบัติงานที่บ้านสำเร็จ'
+			msg = ' บันทึกเวลาปฏิบัติงานที่บ้านสำเร็จ'
+			send_mode('enterHOME', data_uri, msg)
+		});
+	}
+
+	function send_leave() {
+		Webcam.snap(function (data_uri) {
+			send_mode('leave', data_uri)
+			alert('ออกงาน')
+		});
+	} </script>
+	
+	
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Your description">
+	<meta name="keywords" content="Your keywords">
+	<meta name="author" content="Your name">
+	<link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="/css/bootstrap.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="/css/bootstrap-responsive.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="/css/supersized.core.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="/css/style.css" type="text/css" media="screen">
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/jquery.easing.1.3.js"></script>
+	<script type="text/javascript" src="/js/superfish.js"></script>
+	<script type="text/javascript" src="/js/supersized.core.3.2.1.js"></script>
+	<script>
+		$(document).ready(function() {
+			/////// icons
+			//$(".social li").find("a").css({opacity:0.6});
+			$(".social li a").hover(function() {
+				$(this).stop().animate({opacity:0.6 }, 400, 'easeOutExpo');		    
+			},function(){
+			    $(this).stop().animate({opacity:1 }, 400, 'easeOutExpo' );		   
+			}); 
+		
+			
+		
+		}); //
+		$(window).load(function() {
+			//
+		
+		}); //
+	</script>
+</head>
+
+<body onload='init()' class="subpage" id="bodyid">
+	<header id="header">
+		<div id="main">
+			<header>
+				<div class="container">
+					<div class="row">
+						<div class="span12">
+							<div class="header_inner clearfix">
+								<div class="top1"><a href="index.html" class="logo">ระบบบันทึกเวลา</a>
+								</div>
+								<div class="top2">
+									<div class="menu_top">
+<span><img src="/images/logo.png">กรมทรัพย์สินทางปัญญา (v.1)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div id="content">
+				<div class="container">
+					<div class="row">
+						<div class="span5">
+							<!-- <img src="images/contacts01.jpg" alt=""> -->
+							<div class="webcam">
+								<div id="webcam" style="margin-top:0px; margin:0px auto;"></div>
+							</div>
+						</div>
+						<div class="span6">
+							<div class="menu menu1 row sf-menu clearfix">
+								<div class="caption">
+									<h3 class="text-center">
+										ยินดีต้อนรับคุณ
+										<div id='attID'></div>
+									</h3>
+									<h4 class="text-center">
+										โปรดคลิกบันทึกเวลา
+									</h4>
+									<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E-mail: <a href="#"></a><br> -->
+									<div id="results" style="display: none;"></div>
+								</div>
+							</div>
+							<ul class="menu menu2 row sf-menu clearfix">
+								<li class='nav5 span3 sub-menu sub-menu-1'><a onclick='send_enterDIP()'><span class='over1'></span><span class='over2'></span><span class='ic1'></span><span class='txt1' style="height: 10px;">ปฏิบัติงานที่กรม</span><!--<span class='txt2'></span>--></a>
+								</li>
+								<li class="nav4 span3 sub-menu sub-menu-1"><a onclick='send_enterHOME()'><span class="over1"></span><span class="over2"></span><span class="ic1"></span><span class="txt1" style="height: 10px;">ปฏิบัติงานที่บ้าน</span><!--<span class="txt2"></span>--></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div id="content">
+					<div class="container">
+						<div class="row">
+							<div class="span12">
+								<figure class="google_map" id='x1'></figure>
+								<p>
+									<table>
+										<tr>
+											<td>Your current position is:</td>
+											<td>(Latitude</td>
+											<td>,</td>
+											<td>Longitude )</td>
+										</tr>
+										<tr>
+											<td></td>
+											<td>
+												<div id='gps-lat'></div>
+											</td>
+											<td>,</td>
+											<td>
+												<div id='gps-lat'></div>
+												<div id='gps-log'></div>
+											</td>
+										</tr>
+										<tr>
+											<td></td>
+											<td>
+												<div id='gps-accr'></div>
+											</td>
+											<td>meters.</td>
+										</tr>
+									</table>
+									<!--/data=!3m1!1e3-->
+								</p>
+								<script type="text/javascript" src="js/bootstrap.js"></script>
+								<div class="line1" style="display: none;"></div>
+								<div id='pic2' style="display: none;"></div>
+								<div class="line1" style="display: none;"></div>
+								<div id='pic0' style="display: none;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="container">
+					<div class="row">
+						<div class="span12">
+							<footer class="clearfix">
+								<div class="bot1">Call us: <span><a href="tel:+6625474654">02 547 4654</a></span>
+								</div>
+								<div class="bot2 clearfix">
+									<div class="txt1">Feedback : <a href="mailto:itoffice.ipthailand@gmail.com?subject=DIP Feedback CheckIn&body=DIP Feedback CheckIn:">itoffice.ipthailand@gmail.com</a>
+									</div>
+									<div class="social_wrapper">
+										<ul class="social clearfix">
+											<!-- <li><a href="#"><img src="images/social_ic1.jpg" alt="#"></a></li>
+				    <li><a href="#"><img src="images/social_ic2.jpg" alt="#"></a></li> -->
+											<li>
+												<a href="mailto:itoffice.ipthailand@gmail.com?subject = FeedbackCheckIn&body = Message">
+													<img src="/images/social_ic3.jpg" alt="#">
+												</a>
+											</li>
+											<!-- <li><a href="#"><img src="images/social_ic4.jpg" alt="#"></a></li>
+				    <li><span><a href="#"><img src="images/social_ic5.jpg" alt="#"></a></span></li>
+				    <li><a href="#"><img src="images/social_ic6.jpg" alt="#"></a></li>-->
+										</ul>
+									</div>
+								</div>
+							</footer>
+							<div class="copyright">Copyright © 2021.All rights reserved. | <a href="#">Privacy Policy</a>
+								<div id="snapcnt">?</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+</body>
+
+</html>

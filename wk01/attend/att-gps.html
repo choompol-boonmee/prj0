@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+
+<body onload='init()'>
+
+<h1><a onclick="getLocation()">เข้างาน</a></h1>
+
+<h1><p id="demo"></p></h1>
+
+<script>
+var y
+function init() {
+	y = document.getElementById("demo");
+	y.innerHTML = "INIT"
+}
+
+function getLocation() {
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(showPosition);
+	} else { 
+	    y.innerHTML = "Geolocation is not supported by this browser.";
+	}
+}
+
+function showPosition(position) {
+  x.innerHTML = "Latitude: " + position.coords.latitude + 
+  "<br>Longitude: " + position.coords.longitude;
+}
+</script>
+
+</body>
+</html>
+
