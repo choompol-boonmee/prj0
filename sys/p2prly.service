@@ -1,0 +1,12 @@
+[Unit]
+Description=libp2p relay
+
+[Service]
+WorkingDirectory=/home/num/rly
+ExecStart=/home/num/rly/rly
+User=num
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

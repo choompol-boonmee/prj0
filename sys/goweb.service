@@ -1,0 +1,12 @@
+[Unit]
+Description=GOWEB for DIP attendance
+
+[Service]
+WorkingDirectory=/home/num/wk01/attend
+ExecStart=/home/num/wk01/attend/build/attend
+User=num
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
